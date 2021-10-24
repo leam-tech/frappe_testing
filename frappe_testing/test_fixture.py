@@ -102,7 +102,8 @@ class TestFixture():
 
                 doc.reload()
                 if doc.docstatus == 1:
-                    doc.cancel()
+                    doc.docstatus = 2
+                    doc.save(ignore_permissions=True)
 
                 frappe.delete_doc(
                     dt,
