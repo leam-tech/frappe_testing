@@ -103,7 +103,14 @@ class TestFixture():
                 doc.reload()
                 if doc.docstatus == 1:
                     doc.cancel()
-                frappe.delete_doc(dt, doc.name, force=not meta.is_submittable)
+
+                frappe.delete_doc(
+                    dt,
+                    doc.name,
+                    force=not meta.is_submittable,
+                    ignore_permissions=True
+                )
+
         self.fixtures = frappe._dict()
 
     def __getitem__(self, doctype_idx):
