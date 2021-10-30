@@ -12,6 +12,7 @@ class TestFixture():
 
     def __init__(self):
         self.DEFAULT_DOCTYPE = None
+        self.TESTER_USER = frappe.session.user
         self.dependent_fixtures = []
         self.fixtures = frappe._dict()
         self.duplicate = False
@@ -27,6 +28,10 @@ class TestFixture():
         Returns:
             None
         """
+
+        if frappe.session.user != self.TESTER_USER:
+            frappe.set_user(self.TESTER_USER)
+
         if self.isSetUp():
             self.duplicate = True
             og: TestFixture = self.get_locals_obj()[self.__class__.__name__]
@@ -132,6 +137,9 @@ class TestFixture():
         """
         Tear Down all generated fixtures
         """
+        if frappe.session.user != self.TESTER_USER:
+            frappe.set_user(self.TESTER_USER)
+
         if self.duplicate:
             self.fixtures = frappe._dict()
             self._dependent_fixture_instances = []
