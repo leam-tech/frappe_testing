@@ -54,12 +54,14 @@ class SinglesTestFixture(TestFixture):
             if not (field == "doctype" or field == "name"):
 
                 field_default = None
-                field_meta = frappe.get_meta("Romman Core Settings").get_field(field)
+                field_meta = frappe.get_meta(self.DEFAULT_DOCTYPE).get_field(field)
                 if field_meta:
                     field_default = field_meta.default
 
                 frappe.db.set_value(self.DEFAULT_DOCTYPE, self.DEFAULT_DOCTYPE,
                                     field, field_default)
+
+        frappe.db.commit()
 
         if not skip_dependencies:
             self.make_dependencies()
@@ -100,6 +102,8 @@ class SinglesTestFixture(TestFixture):
             self.singles_copy,
             update_modified=False,
         )
+
+        frappe.db.commit()
 
         self.destroy_dependencies()
         self.get_locals_obj()[self.__class__.__name__] = None
