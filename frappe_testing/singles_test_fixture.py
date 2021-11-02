@@ -8,25 +8,28 @@ class SinglesTestFixture(TestFixture):
     Extends the Fixture Manager for Single doctypes
     Just as responsible; will backup the Single doc before testing, and restore afterwards
 
-    :param singles_copy: Contains the copy of the doc fields and values
+    :param `reset_before_test`: If set, all fields on the doc will be reset to default before tests.
+    `True` by default.
+    :param `singles_copy`: Contains the copy of the doc fields and values
     """
 
     def __init__(self):
+        self.reset_before_test = True
         self.singles_copy = {}
         super().__init__()
 
     def setUp(self, skip_fixtures=False, skip_dependencies=False):
         """
         Overrides TestFixture setUp. Will backup the existing doc fields,
-        and set them to their default values.
+        and set them to their default values if `reset_before_test` is `True`.
         Then will setup the fixture fields.
 
         Args:
-            skip_fixtures (bool): Skip the fixture creation
-            skip_dependencies (bool): Skip the dependency creation
+            `skip_fixtures` (bool): Skip the fixture creation
+            `skip_dependencies` (bool): Skip the dependency creation
 
         Returns:
-            None
+            `None`
         """
 
         if not self.DEFAULT_DOCTYPE:
@@ -50,16 +53,17 @@ class SinglesTestFixture(TestFixture):
         self.singles_copy = frappe.get_doc(self.DEFAULT_DOCTYPE).as_dict()
 
         # reset the single doc to a 'default' state
-        for field, value in self.singles_copy.items():
-            if not (field == "doctype" or field == "name"):
+        if self.reset_before_test:
+            for field in self.singles_copy.keys():
+                if not (field == "doctype" or field == "name"):
 
-                field_default = None
-                field_meta = frappe.get_meta(self.DEFAULT_DOCTYPE).get_field(field)
-                if field_meta:
-                    field_default = field_meta.default
+                    field_default = None
+                    field_meta = frappe.get_meta(self.DEFAULT_DOCTYPE).get_field(field)
+                    if field_meta:
+                        field_default = field_meta.default
 
-                frappe.db.set_value(self.DEFAULT_DOCTYPE, self.DEFAULT_DOCTYPE,
-                                    field, field_default)
+                    frappe.db.set_value(self.DEFAULT_DOCTYPE, self.DEFAULT_DOCTYPE,
+                                        field, field_default)
 
         frappe.db.commit()
 
