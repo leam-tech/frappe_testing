@@ -119,7 +119,8 @@ class TestFixture():
                     dt,
                     doc.name,
                     force=not meta.is_submittable,
-                    ignore_permissions=True
+                    ignore_permissions=True,
+                    delete_permanently=True
                 )
 
         self.fixtures = frappe._dict()
