@@ -59,6 +59,11 @@ class TestFixture():
             d.setUp()
             self._dependent_fixture_instances.append(d)
 
+    def get_dependent_fixture_instance(self, doctype):
+        if hasattr(self, "_dependent_fixture_instances") and isinstance(self._dependent_fixture_instances, list):
+            dependent = list(filter(lambda d: d.DEFAULT_DOCTYPE == doctype, self._dependent_fixture_instances))
+            return dependent[0] if dependent else None
+
     def destroy_dependencies(self):
         """
         Invokes tearDown on dependent fixture classes
@@ -114,7 +119,8 @@ class TestFixture():
                     dt,
                     doc.name,
                     force=not meta.is_submittable,
-                    ignore_permissions=True
+                    ignore_permissions=True,
+                    delete_permanently=True
                 )
 
         self.fixtures = frappe._dict()
