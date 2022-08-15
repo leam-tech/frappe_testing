@@ -32,6 +32,10 @@ class TestFixture():
         if frappe.session.user != self.TESTER_USER:
             frappe.set_user(self.TESTER_USER)
 
+        if not frappe.flags.first_setup_run:
+            frappe.db.savepoint("testing_savepoint")
+            frappe.flags.first_setup_run = True
+
         if self.isSetUp():
             self.duplicate = True
             og: TestFixture = self.get_locals_obj()[self.__class__.__name__]
@@ -102,26 +106,8 @@ class TestFixture():
 
     def delete_fixtures(self):
         """
-        Goes through each fixture generated and deletes it
+        reset self.fixtures (rollback will take care to the db)
         """
-        for dt, docs in self.fixtures.items():
-            meta = frappe.get_meta(dt)
-            for doc in docs:
-                if not frappe.db.exists(dt, doc.name) or doc is None:
-                    continue
-
-                doc.reload()
-                if doc.docstatus == 1:
-                    doc.docstatus = 2
-                    doc.save(ignore_permissions=True)
-
-                frappe.delete_doc(
-                    dt,
-                    doc.name,
-                    force=not meta.is_submittable,
-                    ignore_permissions=True,
-                    delete_permanently=True
-                )
 
         self.fixtures = frappe._dict()
 
@@ -145,6 +131,10 @@ class TestFixture():
         """
         if frappe.session.user != self.TESTER_USER:
             frappe.set_user(self.TESTER_USER)
+
+        if frappe.flags.first_setup_run:
+            frappe.db.rollback(save_point="testing_savepoint")
+            frappe.flags.first_setup_run = None
 
         if self.duplicate:
             self.fixtures = frappe._dict()
